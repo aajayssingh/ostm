@@ -164,6 +164,9 @@ int main()
 
 #define DEFAULT_THREADS 100
 #define DEFAULT_ITEMS 1
+#define NLOOK 0.4
+#define NADD 0.2
+#define NDEL 0.4
 
 
 static void core_dump(int sigid)
@@ -379,11 +382,11 @@ static void master_thread(void)
       (stderr, "\tthread info:\n\t  ave. = %f[sec], min = %f[sec], max = %f[sec]\n",
        ave_itvl, min_itvl, max_itvl);
 
-        cout<<endl<<"full table ::"<<endl;
-        hasht->printTable();
+    cout<<endl<<"full table ::"<<endl;
+    hasht->printTable();
 
-        cout<<endl<<"blue table ::"<<endl;
-        hasht->printBlueTable();
+    cout<<endl<<"blue table ::"<<endl;
+    hasht->printBlueTable();
 }
 
 static void worker_thread_add(void *arg)
@@ -665,9 +668,9 @@ static int workbench(void)
 //	goto end;
 //      }
 
-int nlook = 0.7*system_variables.thread_num;
-int nadd = 0.2*system_variables.thread_num;
-int ndel = 0.1*system_variables.thread_num;
+int nlook = NLOOK*system_variables.thread_num;
+int nadd = NADD*system_variables.thread_num;
+int ndel = NDEL*system_variables.thread_num;
 
       for (int i = 0; i < nlook; i++)
       if (pthread_create(&work_thread_tptr[i], NULL, (void *) worker_thread_look,

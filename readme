@@ -1,0 +1,4 @@
+compile :
+
+g++ -Wall -fexceptions -std=c++14 -g -fpermissive -pthread main.cpp ostm.cpp tablsl.cpp 
+

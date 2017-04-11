@@ -188,8 +188,9 @@ inside func we can access as  Foo* fooPtr = fooPtrArray[i]; and declare as in t_
        // cout<< "opstatus" <<op_status<<endl;
     }
 
+    #ifdef DEBUG
     cout<< endl<<"lslsearch:: nodes " <<preds[0]->key<<" "<< preds[1]->key<<" "<<currs[0]->key<<" "<<currs[1]->key<<endl;
-
+    #endif // DEBUG
     return op_status;
 }
 //#endif // DEBUG

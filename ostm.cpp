@@ -397,9 +397,11 @@ else
         }
     }
 
+    #ifdef DEBUG
     std::cout<<"t_delete:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
     std::cout<<"t_delete:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
     std::cout<<"t_delete:: lslsearch returned tid "<<txlog->tid<<std::endl;
+#endif // DEBUG
 
     //create ll_entry and log all new values for subsequent ops
     int ll_pos = txlog->createLLentry(key);
@@ -490,9 +492,12 @@ STATUS OSTM::tryCommit(trans_log* txlog)
         int obj_id = txlog->ll[i].second->obj_id;
         op_status = hash_table->lslSch(obj_id, key, NULL, preds, currs, TRYCOMMIT, tid); //??test value is null
 
+        txlog->setPredsnCurrs(i, preds, currs);
+
         if(ABORT == op_status)
         {
             //release locks and memory
+            std::cout<<"trycommit::abort called"<<std::endl;
             tryAbort(txlog);//delete all dynamic allocation of transaction
 
             for(int j = 0; j <= i; j++)
@@ -511,16 +516,28 @@ STATUS OSTM::tryCommit(trans_log* txlog)
                 unlock(txlog->ll[j].second->currs[1]->mtx);
             }
 
-            return ABORT;
-        }
+// unlock(preds[0]->mtx);
+//    if(preds[0] != preds[1])
+//        unlock(preds[1]->mtx);
+//
+//    unlock(currs[0]->mtx);
+//    if(currs[0] != currs[1])
+//        unlock(currs[1]->mtx);
 
-        txlog->setPredsnCurrs(i, preds, currs);
-
-
-        std::cout<<"tryCommit:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
+            std::cout<<"tryCommit:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
         std::cout<<"tryCommit:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
         std::cout<<"tryCommit:: lslsearch returned tid "<<txlog->tid<<std::endl;
 
+            return ABORT;
+        }
+
+      //  txlog->setPredsnCurrs(i, preds, currs);
+
+#if DEBUG
+        std::cout<<"tryCommit:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
+        std::cout<<"tryCommit:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
+        std::cout<<"tryCommit:: lslsearch returned tid "<<txlog->tid<<std::endl;
+#endif // DEBUG
     }
 }
 

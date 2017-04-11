@@ -162,7 +162,7 @@ int main()
 #define MAX_ITEMS 30000
 #define MAX_LEVEL 16
 
-#define DEFAULT_THREADS 5
+#define DEFAULT_THREADS 100
 #define DEFAULT_ITEMS 1
 
 
@@ -263,8 +263,16 @@ void del(int key, int thid)
 //
 //        ops = lib->t_insert(txlog, 0, key, 100);//lib->t_lookup(txlog, 0, 6, val);
 //        cout<<"op status "<<ops<<endl;
+
 if(ABORT != ops)
-    lib->tryCommit(txlog);
+{
+    ops = lib->tryCommit(txlog);
+    if(ops == ABORT)
+    {
+        cout<<"hello key "<<key<<endl;
+    }
+}
+
 }
 
 
@@ -411,6 +419,7 @@ static void worker_thread(void *arg)
       //      pthread_yield(NULL);
     }
 
+
     usleep(no * 10);
 
     key = no * system_variables.item_num;
@@ -425,6 +434,8 @@ static void worker_thread(void *arg)
             fprintf(stderr, "t_delete: val = %ld\n", getval);
 
     }
+
+
 
     key = no * system_variables.item_num;
     for (i = 0; i < system_variables.item_num; i++) {

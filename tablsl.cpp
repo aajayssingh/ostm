@@ -107,7 +107,7 @@ void HashMap::lslInsert(int key, int value)
  * Search Element at a key
  key must strictly lie b\w head and tail that is INT_MIN and INT_MAX
  */
-//#ifdef DEBUG
+//#ifdef DEBUG_LOGS
 STATUS HashMap::lslSch(int obj_id, int key, int* value, LinkedHashNode** preds, LinkedHashNode** currs, VALIDATION_TYPE val_type, int tid) /*preds and currs are arrays of size two with pointers to object LinkedHashNode
 inside func we can access as  Foo* fooPtr = fooPtrArray[i]; and declare as in t_lookup, insert Foo* fooPtrArray[4];*/
 {
@@ -188,12 +188,12 @@ inside func we can access as  Foo* fooPtr = fooPtrArray[i]; and declare as in t_
        // cout<< "opstatus" <<op_status<<endl;
     }
 
-    #ifdef DEBUG
+    #ifdef DEBUG_LOGS
     cout<< endl<<"lslsearch:: nodes " <<preds[0]->key<<" "<< preds[1]->key<<" "<<currs[0]->key<<" "<<currs[1]->key<<endl;
-    #endif // DEBUG
+    #endif // DEBUG_LOGS
     return op_status;
 }
-//#endif // DEBUG
+//#endif // DEBUG_LOGS
 
 int HashMap::lslSearch(int key)
 {
@@ -325,10 +325,10 @@ STATUS toValidation(int key, LinkedHashNode** currs, VALIDATION_TYPE val_type, i
         curr = currs[1];
     else if(key == currs[0]->key)
         curr = currs[0];
-   #ifdef DEBUG
+   #ifdef DEBUG_LOGS
     else
         cout <<"getAptCurr has null curr"<<endl;
-   #endif // DEBUG
+   #endif // DEBUG_LOGS
 
     if((NULL != curr) && (key == curr->key))
     {

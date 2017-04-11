@@ -8,7 +8,7 @@ trans_log:: trans_log(int tid)
     this->tid = tid;
 
   //debug default init of local log
-  #ifdef DEBUG
+  #ifdef DEBUG_INIT_LOG
     for (int i=0; i<5; i++)
     {
 
@@ -264,11 +264,11 @@ else
             preds[1]->red_next->max_ts.look_ts = txlog->tid; //setting ts of new created node
         }
     }
-
+#ifdef DEBUG_LOGS
     std::cout<<"t_lookup:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
     std::cout<<"t_lookup:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
     std::cout<<"t_lookup:: lslsearch returned tid "<<txlog->tid<<std::endl;
-
+#endif // DEBUG_LOGS
     //create ll_entry and log all new values for subsequent ops
     int ll_pos = txlog->createLLentry(key);
     txlog->setPredsnCurrs(ll_pos, preds, currs);
@@ -397,11 +397,11 @@ else
         }
     }
 
-    #ifdef DEBUG
+    #ifdef DEBUG_LOGS
     std::cout<<"t_delete:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
     std::cout<<"t_delete:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
     std::cout<<"t_delete:: lslsearch returned tid "<<txlog->tid<<std::endl;
-#endif // DEBUG
+    #endif // DEBUG_LOGS
 
     //create ll_entry and log all new values for subsequent ops
     int ll_pos = txlog->createLLentry(key);
@@ -524,7 +524,7 @@ STATUS OSTM::tryCommit(trans_log* txlog)
 //    if(currs[0] != currs[1])
 //        unlock(currs[1]->mtx);
 
-            std::cout<<"tryCommit:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
+        std::cout<<"tryCommit:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
         std::cout<<"tryCommit:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
         std::cout<<"tryCommit:: lslsearch returned tid "<<txlog->tid<<std::endl;
 
@@ -533,11 +533,11 @@ STATUS OSTM::tryCommit(trans_log* txlog)
 
       //  txlog->setPredsnCurrs(i, preds, currs);
 
-#if DEBUG
+#if DEBUG_LOGS
         std::cout<<"tryCommit:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
         std::cout<<"tryCommit:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
         std::cout<<"tryCommit:: lslsearch returned tid "<<txlog->tid<<std::endl;
-#endif // DEBUG
+#endif // DEBUG_LOGS
     }
 }
 

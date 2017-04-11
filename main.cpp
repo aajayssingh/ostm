@@ -179,7 +179,10 @@ static pthread_mutex_t end_mtx;
 static pthread_cond_t end_cond;
 static unsigned int end_thread_num;
 
-static pthread_mutex_t print_mtx;
+static pthread_mutex_t add_print_mtx;
+static pthread_mutex_t look_print_mtx;
+static pthread_mutex_t del_print_mtx;
+
 
 
 typedef struct {
@@ -200,7 +203,12 @@ typedef struct stat_time stat_data_t;
  */
 static double get_interval(struct timeval, struct timeval);
 static void master_thread(void);
-static void worker_thread(void *);
+//static void worker_thread(void *);
+
+static void worker_thread_add(void *);
+static void worker_thread_look(void *);
+static void worker_thread_del(void *);
+
 static int workbench(void);
 static void usage(char **);
 static void init_system_variables(void);
@@ -217,7 +225,8 @@ void add(int key, int thid)
     txlog = lib->begin();
 
         ops = lib->t_insert(txlog, 0, key, 100);//lib->t_lookup(txlog, 0, 6, val);
-        cout<<"op status "<<ops<<endl;
+      //  cout<<"op status "<<ops<<endl;
+
         if(ABORT != ops)
             lib->tryCommit(txlog);
 }
@@ -235,9 +244,8 @@ void look(int key, int thid)
     txlog = lib->begin();
 
         ops = lib->t_lookup(txlog, 0, key, val);
-        cout<<"op status "<<ops<<endl;
+        //cout<<"op status "<<ops<<endl;
 
-//
 //        ops = lib->t_insert(txlog, 0, key, 100);//lib->t_lookup(txlog, 0, 6, val);
 //        cout<<"op status "<<ops<<endl;
 if(ABORT != ops)
@@ -258,7 +266,8 @@ void del(int key, int thid)
     txlog = lib->begin();
 
         ops = lib->t_delete(txlog, 0, key, val);
-        cout<<"op status "<<ops<<endl;
+
+       // cout<<"op status "<<ops<<endl;
 
 //
 //        ops = lib->t_insert(txlog, 0, key, 100);//lib->t_lookup(txlog, 0, 6, val);
@@ -267,10 +276,14 @@ void del(int key, int thid)
 if(ABORT != ops)
 {
     ops = lib->tryCommit(txlog);
+
+    #ifdef DEBUG_LOGS
     if(ops == ABORT)
     {
         cout<<"hello key "<<key<<endl;
     }
+    #endif
+//    elog("hi");
 }
 
 }
@@ -373,9 +386,7 @@ static void master_thread(void)
         hasht->printBlueTable();
 }
 
-
-
-static void worker_thread(void *arg)
+static void worker_thread_add(void *arg)
 {
     uintptr_t no = (uintptr_t) arg;
     unsigned int i;
@@ -399,7 +410,6 @@ static void worker_thread(void *arg)
     }
 
     gettimeofday(&stat_data[no].begin, NULL);
-//    sum[no] = 0;
 
     /*  main loop */
     key = no * system_variables.item_num;
@@ -408,9 +418,9 @@ static void worker_thread(void *arg)
         if (0 < system_variables.verbose)
             fprintf(stderr, "thread[%lu] add: %lu\n", (uintptr_t)no, (uintptr_t) key);
 
-        pthread_mutex_lock(&print_mtx);
-        cout<<"\t\t key "<<key<<" thread id "<<no<<"::"<<endl;
-        pthread_mutex_unlock(&print_mtx);
+        pthread_mutex_lock(&add_print_mtx);
+        cout<<"add \t\t key "<<key<<" thread id "<<no<<"::"<<endl;
+        pthread_mutex_unlock(&add_print_mtx);
 
 
        add(key, no);
@@ -420,15 +430,53 @@ static void worker_thread(void *arg)
     }
 
 
-    usleep(no * 10);
+    /* send signal */
+    gettimeofday(&stat_data[no].end, NULL);
+    pthread_mutex_lock(&end_mtx);
+    end_thread_num++;
+    pthread_cond_signal(&end_cond);
+    pthread_mutex_unlock(&end_mtx);
+}
+
+
+static void worker_thread_look(void *arg)
+{
+    uintptr_t no = (uintptr_t) arg;
+    unsigned int i;
+    int key;
+    int getval;
+
+
+    /*
+     * increment begin_thread_num, and wait for broadcast signal from last created thread
+     */
+    if (system_variables.thread_num != 1) {
+      pthread_mutex_lock(&begin_mtx);
+      begin_thread_num++;
+      if (begin_thread_num == system_variables.thread_num)
+	pthread_cond_broadcast(&begin_cond);
+      else {
+	while (begin_thread_num < system_variables.thread_num)
+	  pthread_cond_wait(&begin_cond, &begin_mtx);
+      }
+      pthread_mutex_unlock(&begin_mtx);
+    }
+
+    gettimeofday(&stat_data[no].begin, NULL);
+
+    /*  main loop */
+//    usleep(no * 10);
 
     key = no * system_variables.item_num;
     for (i = 0; i < system_variables.item_num; i++) {
         ++key;
 
-        look(key, no);
-//        del(key, no);
 
+        pthread_mutex_lock(&look_print_mtx);
+        cout<<"lookup\t\t key "<<key<<" thread id "<<no<<"::"<<endl;
+        pthread_mutex_unlock(&look_print_mtx);
+
+        look(key, no);
 
           if (0 < system_variables.verbose)
             fprintf(stderr, "t_delete: val = %ld\n", getval);
@@ -436,15 +484,49 @@ static void worker_thread(void *arg)
     }
 
 
+    /* send signal */
+    gettimeofday(&stat_data[no].end, NULL);
+    pthread_mutex_lock(&end_mtx);
+    end_thread_num++;
+    pthread_cond_signal(&end_cond);
+    pthread_mutex_unlock(&end_mtx);
+}
 
+
+static void worker_thread_del(void *arg)
+{
+    uintptr_t no = (uintptr_t) arg;
+    unsigned int i;
+    int key;
+    int getval;
+
+
+    /*
+     * increment begin_thread_num, and wait for broadcast signal from last created thread
+     */
+    if (system_variables.thread_num != 1) {
+      pthread_mutex_lock(&begin_mtx);
+      begin_thread_num++;
+      if (begin_thread_num == system_variables.thread_num)
+	pthread_cond_broadcast(&begin_cond);
+      else {
+	while (begin_thread_num < system_variables.thread_num)
+	  pthread_cond_wait(&begin_cond, &begin_mtx);
+      }
+      pthread_mutex_unlock(&begin_mtx);
+    }
+
+    gettimeofday(&stat_data[no].begin, NULL);
+
+    /*  main loop */
     key = no * system_variables.item_num;
     for (i = 0; i < system_variables.item_num; i++) {
         ++key;
         key = rand()%(20);
 
-        pthread_mutex_lock(&print_mtx);
-        cout<<"\t\tDEL key "<<key<<" thread id "<<no<<"::"<<endl;
-        pthread_mutex_unlock(&print_mtx);
+        pthread_mutex_lock(&del_print_mtx);
+        cout<<"delete\t\t key "<<key<<" thread id "<<no<<"::"<<endl;
+        pthread_mutex_unlock(&del_print_mtx);
         del(key, no);
 
 
@@ -462,10 +544,98 @@ static void worker_thread(void *arg)
     pthread_mutex_unlock(&end_mtx);
 }
 
+
+//static void worker_thread(void *arg)
+//{
+//    uintptr_t no = (uintptr_t) arg;
+//    unsigned int i;
+//    int key;
+//    int getval;
+//
+//
+//    /*
+//     * increment begin_thread_num, and wait for broadcast signal from last created thread
+//     */
+//    if (system_variables.thread_num != 1) {
+//      pthread_mutex_lock(&begin_mtx);
+//      begin_thread_num++;
+//      if (begin_thread_num == system_variables.thread_num)
+//	pthread_cond_broadcast(&begin_cond);
+//      else {
+//	while (begin_thread_num < system_variables.thread_num)
+//	  pthread_cond_wait(&begin_cond, &begin_mtx);
+//      }
+//      pthread_mutex_unlock(&begin_mtx);
+//    }
+//
+//    gettimeofday(&stat_data[no].begin, NULL);
+////    sum[no] = 0;
+//
+//    /*  main loop */
+//    key = no * system_variables.item_num;
+//    for (i = 0; i < system_variables.item_num; i++) {
+//        ++key;
+//        if (0 < system_variables.verbose)
+//            fprintf(stderr, "thread[%lu] add: %lu\n", (uintptr_t)no, (uintptr_t) key);
+//
+//        pthread_mutex_lock(&print_mtx);
+//        cout<<"\t\t key "<<key<<" thread id "<<no<<"::"<<endl;
+//        pthread_mutex_unlock(&print_mtx);
+//
+//
+//       add(key, no);
+//
+//      //      usleep(no);
+//      //      pthread_yield(NULL);
+//    }
+//
+//
+//    usleep(no * 10);
+//
+//    key = no * system_variables.item_num;
+//    for (i = 0; i < system_variables.item_num; i++) {
+//        ++key;
+//
+//        look(key, no);
+////        del(key, no);
+//
+//
+//          if (0 < system_variables.verbose)
+//            fprintf(stderr, "t_delete: val = %ld\n", getval);
+//
+//    }
+//
+//
+//
+//    key = no * system_variables.item_num;
+//    for (i = 0; i < system_variables.item_num; i++) {
+//        ++key;
+//        key = rand()%(20);
+//
+//        pthread_mutex_lock(&print_mtx);
+//        cout<<"\t\tDEL key "<<key<<" thread id "<<no<<"::"<<endl;
+//        pthread_mutex_unlock(&print_mtx);
+//        del(key, no);
+//
+//
+//          if (0 < system_variables.verbose)
+//            fprintf(stderr, "t_delete: val = %ld\n", getval);
+//
+//    }
+//
+//
+//    /* send signal */
+//    gettimeofday(&stat_data[no].end, NULL);
+//    pthread_mutex_lock(&end_mtx);
+//    end_thread_num++;
+//    pthread_cond_signal(&end_cond);
+//    pthread_mutex_unlock(&end_mtx);
+//}
+
 static int workbench(void)
 {
     void *ret = NULL;
-    unsigned int i;
+   //unsigned int i;
 
     fprintf(stderr, "<<simple algorithm test bench>>\n");
 
@@ -488,12 +658,41 @@ static int workbench(void)
     }
     gettimeofday(&stat_data_begin, NULL);
 
-    for (i = 0; i < system_variables.thread_num; i++)
-      if (pthread_create(&work_thread_tptr[i], NULL, (void *) worker_thread,
+//    for (i = 0; i < system_variables.thread_num; i++)
+//      if (pthread_create(&work_thread_tptr[i], NULL, (void *) worker_thread,
+//			 (void *)(intptr_t) i) != 0) {
+//	elog("pthread_create() error");
+//	goto end;
+//      }
+
+int nlook = 0.7*system_variables.thread_num;
+int nadd = 0.2*system_variables.thread_num;
+int ndel = 0.1*system_variables.thread_num;
+
+      for (int i = 0; i < nlook; i++)
+      if (pthread_create(&work_thread_tptr[i], NULL, (void *) worker_thread_look,
 			 (void *)(intptr_t) i) != 0) {
 	elog("pthread_create() error");
 	goto end;
       }
+
+      for (int i = nlook; i < (nlook + nadd); i++)
+      if (pthread_create(&work_thread_tptr[i], NULL, (void *) worker_thread_add,
+			 (void *)(intptr_t) i) != 0) {
+	elog("pthread_create() error");
+	goto end;
+      }
+
+      for (int i = (nlook + nadd); i < (nlook + nadd + ndel); i++)
+      if (pthread_create(&work_thread_tptr[i], NULL, (void *) worker_thread_del,
+			 (void *)(intptr_t) i) != 0) {
+	elog("pthread_create() error");
+	goto end;
+      }
+
+
+
+
 
       fprintf(stderr, "<<Gonna join>>\n");
      /*
@@ -505,8 +704,8 @@ seg fault due to kill()
      */
 
 
-    for (i = 0; i < system_variables.thread_num; i++)
-	if (pthread_join(work_thread_tptr[i], &ret)) {
+    for (int j = 0; j < system_variables.thread_num; j++)
+	if (pthread_join(work_thread_tptr[j], &ret)) {
 	  elog("pthread_join() error");
 	  goto end;
 	}
@@ -560,6 +759,11 @@ int main(int argc, char **argv)
     begin_cond = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
     end_mtx = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
     end_cond = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
+
+    add_print_mtx = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
+    look_print_mtx = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
+    del_print_mtx = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
+
     begin_thread_num = 0;
     end_thread_num = 0;
     init_system_variables();

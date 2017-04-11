@@ -5,7 +5,7 @@
 #include <iostream> //for cout in cpp
 
 
-//#define DEBUG
+//#define DEBUG_LOGS
 const int TABLE_SIZE = 5;
 
 
@@ -81,7 +81,12 @@ for (int i=0; i < arraySize; i++)
     }
 }*/
 
+// TODO (ajay#1#): Right Now code is only for single operation (ins look del) per transaction. ...
+//add that support .
+//For this we need PO validation.
+//not impl POval bcse of crash.
 //>>> 1transaction per thread
+// TODO (ajay#1#): Code still hangs for 400 threads, because of delete abort case in trycommit, probably some unlocked lock is gettingreleased. I updated the predsnCurss earlier as solution. in trycommit preds and currs are fetched again , but the same were not updated inlocal log. And I am using local log to unlock the mutex.
 
 
 #endif //#define COMMON_H

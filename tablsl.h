@@ -6,8 +6,8 @@
 #include <assert.h>
 
 
-#define lock(_mtx_) pthread_mutex_lock(&_mtx_)
-#define unlock(_mtx_) pthread_mutex_unlock(&_mtx_)
+//#define lock(_mtx_) pthread_mutex_lock(&_mtx_)
+//#define unlock(_mtx_) pthread_mutex_unlock(&_mtx_)
 
 
 /*
@@ -28,7 +28,9 @@ class LinkedHashNode
             int del_ts;
         } max_ts;               /*max_ts DS*/
 
-        pthread_mutex_t mtx = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;    /*lock*/
+        pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;    /*lock*/
+        std::recursive_mutex lmutex;
+        int lock_count;
 
         LinkedHashNode *red_next;   /*next red node*/
         LinkedHashNode *blue_next;  /*next blue node*/
@@ -53,21 +55,25 @@ class HashMap
 	   /*
 	     * Insert Element at a key
          */
-        void lslInsert(int key, int value);
+
         void lslIns(int key, int value, LinkedHashNode** preds, LinkedHashNode** currs, LIST_TYPE lst_type);
         /*
 	     * Search Element at a key
          */
-        int lslSearch(int key);
         STATUS lslSch(int obj_id, int key, int* value, LinkedHashNode** preds, LinkedHashNode** currs, VALIDATION_TYPE val_type, int tid);
         /*
 	     * Delete Element at a key
          */
-        void lslDelete(int key);
         void lslDel(LinkedHashNode** preds, LinkedHashNode** currs);
 
         void printTable();
         void printBlueTable();
+
+        /*Functions to test the list functionality serially*/
+        void lslInsert(int key, int value);
+        int lslSearch(int key);
+        void lslDelete(int key);
+
 
 };
 

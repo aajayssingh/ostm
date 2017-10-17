@@ -1,11 +1,20 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <cstdlib>
+
 #include <iostream> //for cout in cpp
 
+#include <thread>
+#include <mutex>              // std::mutex, std::unique_lock
+#include <condition_variable> // std::condition_variable
+#include <sys/time.h>
+#include <math.h>
+#include <sstream>
+#include <assert.h>
 
+typedef uint64_t uint_t;
 //#define DEBUG_LOGS
+
 const int TABLE_SIZE = 5;
 
 
@@ -14,6 +23,7 @@ enum OPN_NAME{
     INSERT = 5,
     DELETE = 6,
     LOOKUP = 7,
+    //error
     WRONG_OPN = 8, //program shall not proceed
     DEFAULT_OPN_NAME = 111
 };
@@ -24,15 +34,20 @@ enum STATUS{
     FAIL= 12,
     COMMIT= 13,
     RETRY = 14,
+    //error
     BUCKET_EMPTY=100,
     VARIABLE_NULL = 101,
-    WRONG_STATUS =102,  //program shall not proceed
+    WRONG_STATUS =102,  //program shall not proceed,
     DEFAULT_OP_STATUS = 222
 };
 enum VALIDATION_TYPE{
     RV,
     TRYCOMMIT
 };
+
+
+#define status(x) ((x == 10)? ("**ABORT**"):( (x == 11)?("OK"): ( (x ==12)?("FAIL"): ( (x == 13)?("COMMIT"): ( (x ==14)?("RETRY"):(  (x == 102)?("WRONG_STATUS"):( (x == 222)?("DEFAULT_OP_STATUS!!!"):("***SCREW") )) ) ) )))
+#define opname(x) ((x == 5)?("INSERT"):( (x==6)?("DELETE"):( (x==7)?("LOOKUP"):(( x==8)?("WRONG_OPN**"):("DEFAULT_OPN_NAME")))))
 
 enum LIST_TYPE{
 RL_BL,
@@ -42,6 +57,8 @@ BL
 
 #define BAD_INDEX INT_MAX
 #define BAD_VALUE INT_MIN
+
+#define MAX_KEY 100
 
 
 //init values

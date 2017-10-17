@@ -9,13 +9,15 @@
 #include <atomic>
 #include <algorithm>
 
+
 struct ll_entry
 {
-    int obj_id;
+    int obj_id, bucketId;
     int key;
     int value;
-    LinkedHashNode** preds; //alloc dynamically these arrays
+    LinkedHashNode** preds; //alloc dynamically these arrays preds[]
     LinkedHashNode** currs;
+    LinkedHashNode* node; //for the inserted single node in BL
     OPN_NAME opn;
     STATUS op_status;
 
@@ -30,7 +32,7 @@ struct ll_entry
 };
 
 //std::vector <int>al;
-typedef std::vector < std::pair< int, ll_entry*> > ll_list;  /*local buffer - release the memory in commit*/
+typedef std::vector < std::pair< int, ll_entry*> > ll_list;  /*local buffer - release the memory in commit* --> its key, ll_entry pair/
 
 /*Transaction class*/
 class trans_log
@@ -51,11 +53,17 @@ public:
   void setOpStatus(int pos, STATUS op_status);
   void setValue(int pos, int value);
   void setKey(int pos, int key);
+  void setbucketId(int pos, int bid);
 
   OPN_NAME getOpn(int ll_pos);
   STATUS getOpStatus(int ll_pos);
   int getValue(int ll_pos);
   int getKey(int ll_pos);
+  int getbucketId(int ll_pos);
+
+
+  void printTxlog();
+  void printPredsnCurrsTxlog();
 };
 
 class OSTM {
@@ -63,6 +71,8 @@ class OSTM {
 
 public:
     std::atomic<int> tid_counter;           /*keeps count of transactions for allocating new transaction IDs*/
+    //std::atomic<int> abort_count;
+
     HashMap* hash_table;                /*shared memory*/ //will init hashtablle as in main.cpp
     // txlog;
 
@@ -79,10 +89,6 @@ public:
     STATUS tryCommit(trans_log* txlog);
     STATUS tryAbort(trans_log* txlog);
 };
-
-
-
-
 
 #endif //OSTM_H
 

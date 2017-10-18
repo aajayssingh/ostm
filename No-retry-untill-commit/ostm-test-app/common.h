@@ -13,7 +13,8 @@
 #include <assert.h>
 
 typedef uint64_t uint_t;
-//#define DEBUG_LOGS
+#define DEBUG_LOGS 0
+#define MULTI_OP 1
 
 const int TABLE_SIZE = 5;
 
@@ -58,7 +59,7 @@ BL
 #define BAD_INDEX INT_MAX
 #define BAD_VALUE INT_MIN
 
-#define MAX_KEY 100
+#define MAX_KEY 1000
 
 
 //init values

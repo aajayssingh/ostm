@@ -293,7 +293,7 @@ else
             preds[1]->red_next->max_ts.look_ts = txlog->tid; //setting ts of new created node
         }
     }
-#ifdef DEBUG_LOGS
+#if DEBUG_LOGS
     std::cout<<"t_lookup:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
     std::cout<<"t_lookup:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
     std::cout<<"t_lookup:: lslsearch returned tid "<<txlog->tid<<std::endl;
@@ -415,7 +415,7 @@ else
         }
     }
 
-    #ifdef DEBUG_LOGS
+    #if DEBUG_LOGS
     std::cout<<"t_delete:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
     std::cout<<"t_delete:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
     std::cout<<"t_delete:: lslsearch returned tid "<<txlog->tid<<std::endl;
@@ -560,7 +560,7 @@ Also Deletes take lock and release in rv-execution phase itself so no worry of l
 
       //  txlog->setPredsnCurrs(i, preds, currs);
 
-#ifdef DEBUG_LOGS
+#if DEBUG_LOGS
         std::cout<<"tryCommit:: lslsearch returned preds "<<preds[0]->key<<" "<<preds[1]->key<<std::endl;
         std::cout<<"tryCommit:: lslsearch returned currs "<<currs[0]->key<<" "<<currs[1]->key<<std::endl;
         std::cout<<"tryCommit:: lslsearch returned tid "<<txlog->tid<<std::endl;
@@ -569,8 +569,9 @@ Also Deletes take lock and release in rv-execution phase itself so no worry of l
 }
 
    // txlog->printPredsnCurrsTxlog();
-
+#if DEBUG_LOGS
    txlog->printTxlog();
+#endif
 /*change the underlying ds*/
     for(int i = 0; i < txlog->ll.size(); i++)
     {
@@ -719,7 +720,7 @@ Also Deletes take lock and release in rv-execution phase itself so no worry of l
                 txlog->setOpStatus(i, OK);
             }
 
-            #ifdef DEBUG_LOGS
+            #if DEBUG_LOGS
             std::cout<<"tryCommit:: INSERT "<<" "<<key<<std::endl;
             #endif // DEBUG_LOGS
 
@@ -741,7 +742,7 @@ Also Deletes take lock and release in rv-execution phase itself so no worry of l
 //                txlog->setOpStatus(i, FAIL);
             }
 
-            #ifdef DEBUG_LOGS
+            #if DEBUG_LOGS
             std::cout<<"tryCommit:: DELETE "<<" "<<key<<std::endl;
             #endif // DEBUG_LOGS
 
@@ -808,8 +809,9 @@ Also Deletes take lock and release in rv-execution phase itself so no worry of l
 
    // hash_table->printTable();
     //hash_table->printBlueTable();
+   #if DEBUG_LOGS
     std::cout<<"to check inf loop AJAY"<<std::endl;
-    //#endif
+   #endif
 
     //release locks code
      for(int i = 0; i < listOfAllNodes.size(); i++)
@@ -828,7 +830,7 @@ Also Deletes take lock and release in rv-execution phase itself so no worry of l
 
      }
 
-    std::cout<<std::endl;
+    std::cout<<"\n";
     //check lock balance for this tx
  #if 0
     std::stringstream msg;
@@ -875,7 +877,10 @@ Also Deletes take lock and release in rv-execution phase itself so no worry of l
 
     tx_status = COMMIT;
     txlog->tx_status = COMMIT;
+
+    #if DEBUG_LOGS
     hash_table->printTable();
+    #endif
 
     //release memory of local log
     //tryAbort(txlog);

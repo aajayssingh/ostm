@@ -202,7 +202,7 @@ inside func we can access as  Foo* fooPtr = fooPtrArray[i]; and declare as in t_
        // cout<< "opstatus" <<op_status<<endl;
     }
 
-    #ifdef DEBUG_LOGS
+    #if DEBUG_LOGS
     cout<< endl<<"lslsearch:: nodes " <<preds[0]->key<<" "<< preds[1]->key<<" "<<currs[0]->key<<" "<<currs[1]->key<<endl;
     #endif // DEBUG_LOGS
     return op_status;
@@ -330,7 +330,7 @@ STATUS toValidation(int key, LinkedHashNode** currs, VALIDATION_TYPE val_type, i
         curr = currs[1];
     else if(key == currs[0]->key)
         curr = currs[0];
-   #ifdef DEBUG_LOGS
+   #if DEBUG_LOGS
     else
         cout <<"getAptCurr has null curr"<<endl;
    #endif // DEBUG_LOGS

@@ -1,0 +1,6 @@
+/*
+*	AUTHOR      :  AJAY SINGH
+*	COMPANY     :  IIT Hyderabad
+*/
+
+Contains the IITH RWSTM test application which is a closed addressed hash table and its aborts and time stats.

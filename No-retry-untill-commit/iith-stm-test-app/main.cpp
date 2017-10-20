@@ -96,7 +96,7 @@ STM* lib = new MVFOCC(30);
 #endif // AJKSTM
 static int i = 0;
 mutex mtx, mtxc;
-int num_del_aborts = 0, num_ins_aborts = 0, num_lookup_aborts = 0;
+int num_del_aborts = 0, num_ins_aborts = 0, num_lookup_aborts = 0, num_mov_aborts = 0;
 
 // NOTE (ajay#1#): For fair comparison contention should be same. ...
 //make sure the key ranges are same.
@@ -144,14 +144,14 @@ struct thread_info{
    barrier_t *barrier;
 };
 
-int number_of_threads =200;
+int number_of_threads =250;
 pthread_t *threads ;
 
 //number of delete, insert and lookup threads
 int delNum = 0, insertNum = 0, lookupNum = 0, moveNum = 0;
 
 //default percentage of delete , insert and lookup threads
-float delp = 15, insertp = 45, lookp = 30, movep = 10;;
+float delp = 20, insertp = 40, lookp = 30, movep = 10;;
 int num_op_per_tx = 4;
 
 
@@ -555,8 +555,6 @@ cout<<"STOPPING..."<<endl;
 duration = (endaj.tv_sec - start.tv_sec);
 duration += ( endaj.tv_usec - start.tv_usec)/ 1000000.0;
 
-//	elapsedaj = (finishaj.tv_sec - startaj.tv_sec);
-//elapsedaj += (finishaj.tv_nsec - startaj.tv_nsec) / 1000000000.0;
 
 elapsedajcpu = (finishajcpu.tv_sec - startajcpu.tv_sec);
 elapsedajcpu += (finishajcpu.tv_nsec - startajcpu.tv_nsec) / 1000000000.0;
@@ -571,17 +569,19 @@ elapsedajrt += (finishajrt.tv_nsec - startajrt.tv_nsec) / 1000000000.0;
 
 //cout<<"clock() in (s)"<<timeaj<<endl;
 //cout<<"gettimeofday() in (s) operation per sec"<<duration/3<<endl;
-cout<<"#ins aborts"<<num_ins_aborts<<endl;
-cout<<"#del aborts"<<num_del_aborts<<endl;
-cout<<"#lookup aborts"<<num_lookup_aborts<<endl;
-cout<<"gtod duration in (s)  "<<duration<<endl;
+cout<<"#ins aborts      :"<<num_ins_aborts<<endl;
+cout<<"#del aborts      :"<<num_del_aborts<<endl;
+cout<<"#lookup aborts   :"<<num_lookup_aborts<<endl;
+cout<<"#mov aborts      :"<<num_mov_aborts<<endl;
+cout<<"#mov aborts      :"<<(num_mov_aborts+num_del_aborts+num_ins_aborts+num_lookup_aborts)<<endl;
+
+cout<<"gtod duration in (ms)  :"<<duration*1000<<endl;
 //cout<<"elapsedajcpu in (s)  "<<elapsedajcpu<<endl;
 //cout<<"elapsedajth in (s)   "<<elapsedajth<<endl;
 //cout<<"elapsedajrt in (s)   "<<elapsedajrt<<endl;
 //printf("avg clock timeaj in(s) %lf ", timeaj/number_of_threads); //to fix precision problem
-//filenumaborts<<(num_del_aborts + num_ins_aborts + num_lookup_aborts)<<endl;
-//
-//file10runGTOD<<duration/number_of_threads<<endl; // divided by 3 bc there are 3 opn executed by the tx
+filenumaborts<<(num_del_aborts + num_ins_aborts + num_lookup_aborts + num_mov_aborts)<<endl;
+file10runGTOD<<duration*1000<<endl; // m sec
 //file10runCPU<<elapsedajcpu/3<<endl;
 //file10runTH<<elapsedajth/3<<endl;
 //file10runRT<<elapsedajrt/3<<endl;
@@ -1037,7 +1037,7 @@ while(k--){
         msg.clear();
 
         mtxc.lock();
-        num_lookup_aborts++;
+        num_del_aborts++;
         mtxc.unlock();
         //read has failed further execution of thread may cause seg fault
         return;//pthread_exit(NULL);
@@ -1056,7 +1056,7 @@ while(k--){
         msg.clear();
 
         mtxc.lock();
-        num_lookup_aborts++;
+        num_del_aborts++;
         mtxc.unlock();
 
         //read has failed further execution of thread may cause seg fault
@@ -1085,7 +1085,7 @@ while(k--){
             msg.clear();
 
             mtxc.lock();
-            num_lookup_aborts++;
+            num_del_aborts++;
             mtxc.unlock();
 
             //read has failed further execution of thread may cause seg fault
@@ -1193,7 +1193,7 @@ void move(thread_info *d)
         msg.clear();
 
         mtxc.lock();
-        num_lookup_aborts++;
+        num_mov_aborts++;
         mtxc.unlock();
         //read has failed further execution of thread may cause seg fault
         return;//pthread_exit(NULL);
@@ -1212,7 +1212,7 @@ void move(thread_info *d)
         msg.clear();
 
         mtxc.lock();
-        num_lookup_aborts++;
+        num_mov_aborts++;
         mtxc.unlock();
 
         //read has failed further execution of thread may cause seg fault
@@ -1241,7 +1241,7 @@ void move(thread_info *d)
             msg.clear();
 
             mtxc.lock();
-            num_lookup_aborts++;
+            num_mov_aborts++;
             mtxc.unlock();
 
             //read has failed further execution of thread may cause seg fault
@@ -1322,7 +1322,7 @@ if(write_res == 0 && read_res == 0 && !k1notfound){
         msg.clear();
 
         mtxc.lock();
-        num_ins_aborts++;
+        num_mov_aborts++;
         mtxc.unlock();
         //read has failed further execution of thread may cause seg fault
         return;//pthread_exit(NULL);
@@ -1347,7 +1347,7 @@ if(write_res == 0 && read_res == 0 && !k1notfound){
         msg.clear();
 
         mtxc.lock();
-        num_ins_aborts++;
+        num_mov_aborts++;
         mtxc.unlock();
 //        read has failed further execution of thread may cause seg fault
         return;//pthread_exit(NULL);
@@ -1367,7 +1367,7 @@ if(write_res == 0 && read_res == 0 && !k1notfound){
         msg.clear();
 
         mtxc.lock();
-        num_ins_aborts++;
+        num_mov_aborts++;
         mtxc.unlock();
   //      read has failed further execution of thread may cause seg fault
         return;//pthread_exit(NULL);
@@ -1393,7 +1393,7 @@ if(write_res == 0 && read_res == 0 && !k1notfound){
             msg.clear();
             //mtx.unlock();
             mtxc.lock();
-            num_ins_aborts++;
+            num_mov_aborts++;
             mtxc.unlock();
             //read failed no point in continuing transac , do releaselock
             pthread_exit(NULL);//or simply break ;
@@ -1455,7 +1455,7 @@ if(read_res == 0 && write_res == 0 && !retry)
         msg.clear();
 
         mtxc.lock();
-        num_del_aborts++;
+        num_mov_aborts++;
         mtxc.unlock();
     }
     else

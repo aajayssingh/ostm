@@ -21,17 +21,21 @@ HashMap* hasht  = lib->hash_table;
 
 
 //DEFAULT VALUES
-const uint_t num_threads = 200; /*multiple of 10 the better, for exact thread distribution */
+const uint_t num_threads = 250; /*multiple of 10 the better, for exact thread distribution */
 
 /*should sum upto 100*/
-uint_t num_insert_percent = 45;
-uint_t num_delete_percent = 15;
+uint_t num_insert_percent = 40;
+uint_t num_delete_percent = 20;
 uint_t num_lookup_percent = 30;
 uint_t num_move_percent = 10;
 uint_t num_insert, num_delete, num_lookup, num_move;
 uint_t num_op_per_tx = 4;
 
 std::thread t[num_threads];
+
+std::mutex mtxc;
+int num_del_aborts = 0, num_ins_aborts = 0, num_lookup_aborts = 0, num_mov_aborts = 0;
+fstream file10runGTOD, filenumaborts;
 
 /*************************Barrier code begins*****************************/
 std::mutex mtx;
@@ -237,6 +241,13 @@ STATUS multilook(int thid)
         txs = lib->tryCommit(txlog);
     }
 
+    if(ABORT == ops || ABORT == txs)
+    {
+        mtxc.lock();
+        num_lookup_aborts++;
+        mtxc.unlock();
+    }
+
     #if DEBUG_LOGS
     stringstream msg;
     msg<<" commit [op status: thid]\t "<< status(txs) <<":"<<thid <<endl<<endl;
@@ -285,6 +296,13 @@ STATUS multiadd(int thid)
     if(ABORT != ops)
         txs = lib->tryCommit(txlog);
 
+    if(ABORT == ops || ABORT == txs)
+    {
+        mtxc.lock();
+        num_ins_aborts++;
+        mtxc.unlock();
+    }
+
     #if DEBUG_LOGS
     //pmtx.lock();
     stringstream msg;
@@ -332,6 +350,13 @@ STATUS muldel(int thid)
     if(ABORT != ops)
     {
         txs = lib->tryCommit(txlog);
+    }
+
+    if(ABORT == ops || ABORT == txs)
+    {
+        mtxc.lock();
+        num_del_aborts++;
+        mtxc.unlock();
     }
 
    #if DEBUG_LOGS
@@ -390,6 +415,13 @@ STATUS mov(uint_t key1, uint_t key2, uint_t val1, uint_t val2, uint_t thid)
     if(ABORT != ops)
     {
         txs = lib->tryCommit(txlog);
+    }
+
+    if(ABORT == ops || ABORT == txs)
+    {
+        mtxc.lock();
+        num_mov_aborts++;
+        mtxc.unlock();
     }
 
     #if DEBUG_LOGS
@@ -535,10 +567,21 @@ int main(int argc, char **argv)
 	hasht->printTable();
 	hasht->printBlueTable();
 
+    cout<<"#ins aborts      :"<<num_ins_aborts<<endl;
+    cout<<"#del aborts      :"<<num_del_aborts<<endl;
+    cout<<"#lookup aborts   :"<<num_lookup_aborts<<endl;
+    cout<<"#mov aborts      :"<<num_mov_aborts<<endl;
+    cout<<"#total aborts      :"<<(num_mov_aborts+num_del_aborts+num_ins_aborts+num_lookup_aborts)<<endl;
 
 	duration = (end_time.tv_sec - start_time.tv_sec);
 	duration += (end_time.tv_usec - start_time.tv_usec)/ 1000000.0;
-	std::cout<<"time: "<<duration<<"seconds"<<std::endl;
+	std::cout<<"time: "<<duration*1000<<"mseconds"<<std::endl;
+
+	filenumaborts.open("numaborts.txt", fstream::out | fstream::app);
+    file10runGTOD.open("runGTOD.txt", fstream::out | fstream::app);
+
+    filenumaborts<<(num_del_aborts + num_ins_aborts + num_lookup_aborts + num_mov_aborts)<<endl;
+    file10runGTOD<<duration*1000<<endl; // in msec
 
 	return 0;
 }

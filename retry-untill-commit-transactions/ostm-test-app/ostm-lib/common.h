@@ -1,3 +1,9 @@
+/*
+*DESCRIPTION    :   OSTM
+*AUTHOR         :   AJAY SINGH
+*COMPANY        :   IIT Hyderabad
+*/
+
 #ifndef COMMON_H
 #define COMMON_H
 

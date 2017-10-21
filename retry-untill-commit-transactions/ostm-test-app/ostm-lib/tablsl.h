@@ -1,3 +1,9 @@
+/*
+*DESCRIPTION    :   OSTM hash table
+*AUTHOR         :   AJAY SINGH
+*COMPANY        :   IIT Hyderabad
+*/
+
 #ifndef TABLSL_H
 #define TABLSL_H
 #include <pthread.h>

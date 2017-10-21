@@ -1,4 +1,8 @@
-#if 1
+/*
+*DESCRIPTION    :   OSTM library implementation
+*AUTHOR         :   AJAY SINGH
+*COMPANY        :   IIT Hyderabad
+*/
 #include "ostm.h"
 
 trans_log:: trans_log(int tid)
@@ -887,6 +891,3 @@ Also Deletes take lock and release in rv-execution phase itself so no worry of l
    // txlog->ll[1].second->preds[0]->key;
     return tx_status;
 }
-
-
-#endif

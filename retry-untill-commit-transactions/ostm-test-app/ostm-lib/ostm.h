@@ -1,5 +1,8 @@
-#if 1
-
+/*
+*DESCRIPTION    :   OSTM hash table
+*AUTHOR         :   AJAY SINGH
+*COMPANY        :   IIT Hyderabad
+*/
 #ifndef OSTM_H
 #define OSTM_H
 
@@ -91,5 +94,3 @@ public:
 };
 
 #endif //OSTM_H
-
-#endif

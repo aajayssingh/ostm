@@ -1,3 +1,9 @@
+/*
+*DESCRIPTION    :   OSTM hash table
+*AUTHOR         :   AJAY SINGH
+*COMPANY        :   IIT Hyderabad
+*/
+
 #include "tablsl.h"
 
 using namespace std; // for cout

@@ -1,19 +1,19 @@
 /*
- * C++ Program to Implement Hash Tables Chaining with List Heads
-NOTE: EVALUATION key points
-When each transaction has one operation   specially with only insert and delete operations There is no abort (negligible). This is an important advantage over r/w STM.
+*DESCRIPTION    :   Prints the linked list
+*AUTHOR         :   AJAY SINGH
+*COMPANY        :   IIT Hyderabad
+*/
 
- */
 #include <iostream>
 #include <fstream>
 
-#include "tablsl.h"
-#include "ostm.h"
+#include "ostm-lib/tablsl.h"
+#include "ostm-lib/ostm.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "common.h"
+#include "ostm-lib/common.h"
 
 using namespace std;
 OSTM* lib = new OSTM();
@@ -21,7 +21,7 @@ HashMap* hasht  = lib->hash_table;
 
 
 //DEFAULT VALUES
-const uint_t num_threads = 250; /*multiple of 10 the better, for exact thread distribution */
+uint_t num_threads = 250; /*multiple of 10 the better, for exact thread distribution */
 
 /*should sum upto 100*/
 uint_t num_insert_percent = 40;
@@ -31,7 +31,7 @@ uint_t num_move_percent = 10;
 uint_t num_insert, num_delete, num_lookup, num_move;
 uint_t num_op_per_tx = 4;
 
-std::thread t[num_threads];
+std::thread *t;
 
 std::mutex mtxc;
 int num_del_aborts = 0, num_ins_aborts = 0, num_lookup_aborts = 0, num_mov_aborts = 0;
@@ -69,9 +69,9 @@ void shoot()
 
 
 /*
- * declartion
- */
-
+* DESCP:	initialise the hash table.
+* AUTHOR:	Ajay Singh
+*/
 STATUS add_init(uint_t key, uint_t thid)
 {
     trans_log* txlog;
@@ -101,7 +101,10 @@ STATUS add_init(uint_t key, uint_t thid)
     return txs;
 }
 
-
+/*
+* DESCP:	method to execute single operation insert per transaction.
+* AUTHOR:	Ajay Singh
+*/
 STATUS add(uint_t key, uint_t val, uint_t thid)
 {
     trans_log* txlog;
@@ -132,6 +135,10 @@ STATUS add(uint_t key, uint_t val, uint_t thid)
     return txs;
 }
 
+/*
+* DESCP:	method to execute single operation lookup per transaction.
+* AUTHOR:	Ajay Singh
+*/
 STATUS look(uint_t key, uint_t thid)
 {
 
@@ -164,7 +171,10 @@ STATUS look(uint_t key, uint_t thid)
     return txs;
 }
 
-
+/*
+* DESCP:	method to execute single operation delete per transaction.
+* AUTHOR:	Ajay Singh
+*/
 STATUS del(uint_t key, uint_t thid)
 {
 //    pthread_mutex_lock(&print_mtx);
@@ -203,6 +213,10 @@ STATUS del(uint_t key, uint_t thid)
 
 }
 
+/*
+* DESCP:	method to execute multiple operation lookup per transaction.
+* AUTHOR:	Ajay Singh
+*/
 STATUS multilook(int thid)
 {
 //    pthread_mutex_lock(&print_mtx);
@@ -555,6 +569,19 @@ int main(int argc, char **argv)
 	num_lookup = (uint_t)ceil((num_lookup_percent*num_threads)/100);
 	num_move = (uint_t)ceil((num_move_percent*num_threads)/100);
 
+    if(argc <= 6)
+    {
+        cout<<"enter #threads, #insert, #delete, #lookup, #mov"<<endl;
+    }
+
+    num_threads = atoi(argv[1]);
+    num_insert = (uint_t)ceil((atoi(argv[2])*num_threads)/100);
+    num_delete = (uint_t)ceil((atoi(argv[3])*num_threads)/100);
+    num_lookup = (uint_t)ceil((atoi(argv[4])*num_threads)/100);
+    num_move = (uint_t)ceil((atoi(argv[5])*num_threads)/100);
+
+    t = new std::thread [num_threads];
+
 	std::cout<<" num_insert:"<<num_insert<<"\n num_delete: "<<num_delete<<"\n num_lookup: "<<num_lookup<<"\n num_move: "<<num_move<<"\n";
 
 	if((num_insert + num_delete + num_lookup + num_move) > num_threads)
@@ -616,6 +643,8 @@ int main(int argc, char **argv)
 	duration = (end_time.tv_sec - start_time.tv_sec);
 	duration += (end_time.tv_usec - start_time.tv_usec)/ 1000000.0;
 	std::cout<<"time: "<<duration*1000<<"mseconds"<<std::endl;
+    std::cout<<"numthreads: "<<num_threads<<std::endl;
+
 
 	filenumaborts.open("numaborts.txt", fstream::out | fstream::app);
     file10runGTOD.open("runGTOD.txt", fstream::out | fstream::app);

@@ -17,11 +17,16 @@ The performance stats collected:
 
 Stats collected are for 50, 100, 150, 200 and 250 threads respectively. And averaged over 50 runs.
 load distribution :
-	40% of threads do insert.
-	30% of threads do delete.
-	20% of threads do lookup.
-	10% of threads do move.
+	20% of threads do insert.
+	10% of threads do delete.
+	50% of threads do lookup.
+	20% of threads do move.
 	
 Each lookup threads does 4 lookup operations. Each insert threads does 4 insert operations. Each delete threads does 4 delete operations.
 
 Hash table size is 5. The hash table is closed addressed.
+
+compile : 
+
+
+run:

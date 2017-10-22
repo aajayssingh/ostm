@@ -26,8 +26,8 @@ uint_t num_threads = 250; /*multiple of 10 the better, for exact thread distribu
 /*should sum upto 100*/
 uint_t num_insert_percent = 40;
 uint_t num_delete_percent = 20;
-uint_t num_lookup_percent = 30;
-uint_t num_move_percent = 10;
+uint_t num_lookup_percent = 10;
+uint_t num_move_percent = 30;
 uint_t num_insert, num_delete, num_lookup, num_move;
 uint_t num_op_per_tx = 4;
 
@@ -301,7 +301,10 @@ STATUS multiadd(int thid)
         {
 
             uint_t key = rand()%(MAX_KEY - 1) + 1;
-            ops = lib->t_insert(txlog, 0, key, 100);//inserting value = 100
+
+            ops = lib->t_lookup(txlog, 0, key, val);
+            if(FAIL == ops)
+                ops = lib->t_insert(txlog, 0, key, 100);//inserting value = 100
 
      #if DEBUG_LOGS
      //       pmtx.lock();
@@ -368,7 +371,10 @@ STATUS muldel(int thid)
         {
 
             uint_t key = rand()%(MAX_KEY - 1) + 1;
-            ops = lib->t_delete(txlog, 0, key, val);//inserting value = 100
+
+            ops = lib->t_lookup(txlog, 0, key, val);
+            if(OK == ops)
+                ops = lib->t_delete(txlog, 0, key, val);//inserting value = 100
 
           #if DEBUG_LOGS
           //  pmtx.lock();
@@ -569,6 +575,8 @@ int main(int argc, char **argv)
 	num_lookup = (uint_t)ceil((num_lookup_percent*num_threads)/100);
 	num_move = (uint_t)ceil((num_move_percent*num_threads)/100);
 
+
+    #if CMD_ARG
     if(argc <= 6)
     {
         cout<<"enter #threads, #insert, #delete, #lookup, #mov"<<endl;
@@ -579,6 +587,7 @@ int main(int argc, char **argv)
     num_delete = (uint_t)ceil((atoi(argv[3])*num_threads)/100);
     num_lookup = (uint_t)ceil((atoi(argv[4])*num_threads)/100);
     num_move = (uint_t)ceil((atoi(argv[5])*num_threads)/100);
+    #endif // CMD_ARG
 
     t = new std::thread [num_threads];
 
@@ -643,7 +652,7 @@ int main(int argc, char **argv)
 	duration = (end_time.tv_sec - start_time.tv_sec);
 	duration += (end_time.tv_usec - start_time.tv_usec)/ 1000000.0;
 	std::cout<<"time: "<<duration*1000<<"mseconds"<<std::endl;
-    std::cout<<"numthreads: "<<num_threads<<std::endl;
+    std::cout<<"#threads: "<<num_threads<<"---> #insert:"<<num_insert<<" #delete: "<<num_delete<<" #lookup: "<<num_lookup<<" #move: "<<num_move<<"\n";
 
 
 	filenumaborts.open("numaborts.txt", fstream::out | fstream::app);

@@ -61,7 +61,7 @@ void print_oblist();
 #define VAL_MAX  INT_MAX
 #define TAB_SIZE 5
 #define MAX_KEY  1000//INT_MAX-(TAB_SIZE -2)
-//#define DEBUG 1
+#define CMD_ARG 1
 
 /**********************************************************************************************************************************************/
 //  GLOBAL DECLARATION
@@ -403,12 +403,14 @@ int main(int argc, char **argv)
 
     barrier_t barrier;
 
+    #if CMD_ARG
     if(argc <= 6)
     {
         cout<<"enter #threads, #insert, #delete, #lookup, #mov"<<endl;
     }
 
     number_of_threads = atoi(argv[1]);
+    #endif // CMD_ARG
     /*ALLOCATING MEMORY TO THREADS FOR BOOKEEPING*/
     threads = new pthread_t [number_of_threads];//pthread_t threads[NUMTHREADS];
     td = new struct thread_info [number_of_threads];//struct thread_info td[NUMTHREADS];
@@ -449,11 +451,12 @@ delNum = (int)ceil((delp*number_of_threads)/100);
 lookupNum = (int)ceil((lookp*number_of_threads)/100);
 moveNum = (int)ceil((movep*number_of_threads)/100);
 
-
+#if CMD_ARG
 insertNum = (int)ceil((atoi(argv[2])*number_of_threads)/100);
 delNum = (int)ceil((atoi(argv[3])*number_of_threads)/100);
 lookupNum = (int)ceil((atoi(argv[4])*number_of_threads)/100);
 moveNum = (int)ceil((atoi(argv[5])*number_of_threads)/100);
+#endif // CMD_ARG
 //cout<<"#threads"<<insertNum<<" "<<delNum<<" "<<lookupNum<<endl;
 //exception verification
 if((insertNum + delNum + lookupNum + moveNum) > number_of_threads)
@@ -576,6 +579,12 @@ elapsedajrt += (finishajrt.tv_nsec - startajrt.tv_nsec) / 1000000000.0;
 
 
 
+    //to safely print the linked list
+    mtx.lock();
+    print_oblist();
+    //cout<<i;
+    mtx.unlock();
+
 
 //cout<<"clock() in (s)"<<timeaj<<endl;
 //cout<<"gettimeofday() in (s) operation per sec"<<duration/3<<endl;
@@ -592,12 +601,8 @@ cout<<"gtod duration in (ms)  :"<<duration*1000<<endl;
 //printf("avg clock timeaj in(s) %lf ", timeaj/number_of_threads); //to fix precision problem
 filenumaborts<<(num_del_aborts + num_ins_aborts + num_lookup_aborts + num_mov_aborts)<<endl;
 file10runGTOD<<duration*1000<<endl; // m sec
-cout<<"num threads "<<number_of_threads<<endl;
-    //to safely print the linked list
-    mtx.lock();
-    print_oblist();
-    //cout<<i;
-    mtx.unlock();
+cout<<" #threads "<<number_of_threads<<"----> #insert "<<insertNum<<" #delete "<<delNum<<" #lookup"<<lookupNum<<" #mov "<<moveNum<<endl;
+
   //  cout << "Done!!!" << endl;
     //releasing memory
     delete[] threads;

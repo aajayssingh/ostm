@@ -29,3 +29,4 @@ Hash table size is 5. The hash table is closed addressed.
 TODO:
 Add authors descp to each API and file.
 except main file the OSTM code remains same. SO edit main twice but lib source can be changed once.
+Compile RUN?

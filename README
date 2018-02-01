@@ -30,3 +30,6 @@ TODO:
 Add authors descp to each API and file.
 except main file the OSTM code remains same. SO edit main twice but lib source can be changed once.
 Compile RUN?
+
+g++ -std=c++14 main.cpp ostm-lib/ostm.cpp ostm-lib/tablsl.cpp -o OSTMaj -lpthread
+

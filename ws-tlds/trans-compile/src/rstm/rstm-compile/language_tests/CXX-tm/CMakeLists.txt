@@ -1,0 +1,7 @@
+project(test NONE)
+cmake_minimum_required(VERSION 2.8.0)
+set (CMAKE_MODULE_PATH /home/sathya/aj-ws/ws-tlds/trans-dev/src/rstm/rstm-dev/cmake/modules/cxx-tm)
+enable_language(CXX-tm OPTIONAL)
+if (NOT CMAKE_CXX-tm_COMPILER_WORKS)
+  message(FATAL_ERROR "Configuring CCX-tm failed (expected)")
+endif ()

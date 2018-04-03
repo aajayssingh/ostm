@@ -11,7 +11,7 @@ HT-OSTM library  ---> lib: ./ostm-lib
 TLDS code        ---> lib: ./ws-tlds
 
 
-The directory ostm-synchrobench compares the HT-OSTM against ESTM of synchrobench and IITH-STM technique.
+The directory ostm-synchrobench_time&abort compares the HT-OSTM against ESTM of synchrobench and IITH-STM technique.
 IITH-STM library 		---> ./ostm-synchrobench/IITH_STM
 Synchrobench library    --->  ./ostm-synchrobench/ESTM 
 

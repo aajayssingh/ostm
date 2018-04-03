@@ -7,7 +7,7 @@ Contains the HT-OSTM library and the code for experimenting the HT-OSTM against 
 
 Paths:
 
-HT-OSTM library  ---> lib: ./ostm-lib
+HT-OSTM library  ---> lib: HT-OSTM/ostm-lib
 TLDS code        ---> lib: ./ws-tlds
 
 

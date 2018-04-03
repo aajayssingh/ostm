@@ -18,3 +18,8 @@ Synchrobench library    --->  ./ostm-synchrobench/ESTM
 g++ -std=c++14 main.cpp ostm-lib/ostm.cpp ostm-lib/tablsl.cpp -o OSTM -lpthread
 
 Instructions to compile the individual libraries and collecting stats are mentioned within each directories.
+
+References:
+Please find tech report at : https://arxiv.org/pdf/1709.00681.pdf
+
+The work is published at NETYS 2018.

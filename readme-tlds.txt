@@ -1,3 +1,5 @@
+Users need to download and compile this library from: https://github.com/ucf-cs/tlds
+
 compile:
 trans-compile> make -j8
 

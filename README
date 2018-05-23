@@ -1,6 +1,6 @@
 /*
 *	AUTHOR      :  AJAY SINGH
-*	COMPANY     :  IIT Hyderabad
+*	INSTITUTE     :  IIT Hyderabad
 */
 
 Contains the HT-OSTM library and the code for experimenting the HT-OSTM against the TLDS (Norec STM, Boosting, transactional list), synchrobench and in house developed read write stm (IITH-STM). The work is done as part of my Master thesis at IIT Hyderabad.
